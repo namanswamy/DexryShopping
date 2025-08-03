@@ -23,14 +23,12 @@ public class CartItem {
 
     public CartItem() {}
 
-    // ✅ Removed id from constructor
     public CartItem(User user, Product product, int quantity) {
         this.user = user;
         this.product = product;
         this.quantity = quantity;
     }
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }
