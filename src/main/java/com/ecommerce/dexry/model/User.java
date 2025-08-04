@@ -1,8 +1,8 @@
 package com.ecommerce.dexry.model;
 
 import com.ecommerce.dexry.model.enums.Role;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -18,7 +18,7 @@ public class User {
     @Column(nullable = false, unique = true)
     private String username;
 
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(nullable = false)
     private String password;
 
@@ -83,4 +83,5 @@ public class User {
     public void addRole(Role role) {
         this.roles.add(role);
     }
+
 }
