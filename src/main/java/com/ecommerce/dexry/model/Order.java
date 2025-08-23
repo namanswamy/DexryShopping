@@ -1,10 +1,12 @@
 package com.ecommerce.dexry.model;
 
 import com.ecommerce.dexry.model.enums.OrderStatus;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name="orders")
@@ -14,34 +16,35 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "total_amount", nullable = false)
-    private BigDecimal totalAmount;
+    @Column(name = "total_amount", nullable = false, precision = 12, scale = 2)
+    private BigDecimal totalAmount = BigDecimal.ZERO;
 
     @Column(name = "timestamp", nullable = false, updatable = false)
     private LocalDateTime timestamp;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private OrderStatus status;
+    private OrderStatus status = OrderStatus.PENDING;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JsonManagedReference("order-items")
+    private List<OrderItem> items = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {
         this.timestamp = LocalDateTime.now();
-        if (this.status == null) {
-            this.status = OrderStatus.PENDING;
-        }
     }
 
     public Order() {}
 
     public Order(User user, BigDecimal totalAmount, OrderStatus status) {
         this.user = user;
-        this.totalAmount = totalAmount;
-        this.status = status;
+        this.totalAmount = totalAmount != null ? totalAmount : BigDecimal.ZERO;
+        this.status = status != null ? status : OrderStatus.PENDING;
     }
 
     public Long getId() {
@@ -65,7 +68,7 @@ public class Order {
     }
 
     public void setTotalAmount(BigDecimal totalAmount) {
-        this.totalAmount = totalAmount;
+        this.totalAmount = totalAmount != null ? totalAmount : BigDecimal.ZERO;
     }
 
     public LocalDateTime getTimestamp() {
@@ -82,5 +85,24 @@ public class Order {
 
     public void setStatus(OrderStatus status) {
         this.status = status;
+    }
+
+    public List<OrderItem> getItems() {
+        return items;
+    }
+
+    public void setItems(List<OrderItem> items) {
+        this.items = items;
+    }
+
+    // ✅ Convenience methods
+    public void addItem(OrderItem item) {
+        items.add(item);
+        item.setOrder(this);
+    }
+
+    public void removeItem(OrderItem item) {
+        items.remove(item);
+        item.setOrder(null);
     }
 }

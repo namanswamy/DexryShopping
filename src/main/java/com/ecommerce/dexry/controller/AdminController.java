@@ -5,7 +5,6 @@ import com.ecommerce.dexry.model.Category;
 import com.ecommerce.dexry.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -48,37 +47,44 @@ public class AdminController {
     }
 
     @PostMapping("/products")
-    public ResponseEntity<?> addProduct(@RequestBody Product product, @RequestParam Long categoryId){
-              try{
-                  Product savedProduct = adminService.addProduct(product, categoryId);
-                  return ResponseEntity.ok(savedProduct);
-              } catch (RuntimeException e){
-                  return ResponseEntity.badRequest().body(e.getMessage());
-              }
+    public ResponseEntity<?> addProduct(@RequestBody Product product, @RequestParam Long categoryId) {
+        try {
+            if (product.getQuantity() == null || product.getQuantity() < 0) {
+                return ResponseEntity.badRequest().body("Quantity must be provided and >= 0");
+            }
+            Product savedProduct = adminService.addProduct(product, categoryId);
+            return ResponseEntity.ok(savedProduct);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PutMapping("/products/{id}")
-    public ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestBody Product product, @RequestParam(required = false) Long categoryId){
-        try{
+    public ResponseEntity<?> updateProduct(@PathVariable Long id,
+                                           @RequestBody Product product,
+                                           @RequestParam(required = false) Long categoryId) {
+        try {
+            if (product.getQuantity() != null && product.getQuantity() < 0) {
+                return ResponseEntity.badRequest().body("Quantity cannot be negative");
+            }
             Product updatedProduct = adminService.updateProduct(id, product, categoryId);
             return ResponseEntity.ok(updatedProduct);
-        } catch(RuntimeException e){
+        } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @DeleteMapping("/products/{id}")
-    public ResponseEntity<?> deleteProduct(@PathVariable Long id){
+    public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
         boolean deleted = adminService.deleteProduct(id);
-        if(deleted){
+        if (deleted) {
             return ResponseEntity.ok("Product deleted successfully");
         }
         return ResponseEntity.notFound().build();
     }
 
     @GetMapping("/products")
-    public ResponseEntity<List<Product>> getAllProducts(){
+    public ResponseEntity<List<Product>> getAllProducts() {
         return ResponseEntity.ok(adminService.getAllProducts());
     }
-
 }

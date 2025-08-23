@@ -2,19 +2,20 @@ package com.ecommerce.dexry.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 
 @Entity
-@Table(name = "cart_items")
-public class CartItem {
+@Table(name = "order_items")
+public class OrderItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "cart_id", nullable = false)
-    @JsonBackReference
-    private Cart cart;
+    @JoinColumn(name = "order_id", nullable = false)
+    @JsonBackReference("order-items")
+    private Order order;
 
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
@@ -23,12 +24,16 @@ public class CartItem {
     @Column(nullable = false)
     private int quantity;
 
-    public CartItem() {}
+    @Column(nullable = false)
+    private BigDecimal price; // price at checkout (snapshot)
 
-    public CartItem(Cart cart, Product product, int quantity) {
-        this.cart = cart;
+    public OrderItem() {}
+
+    public OrderItem(Order order, Product product, int quantity, BigDecimal price) {
+        this.order = order;
         this.product = product;
         this.quantity = quantity;
+        this.price = price;
     }
 
     public Long getId() {
@@ -39,12 +44,12 @@ public class CartItem {
         this.id = id;
     }
 
-    public Cart getCart() {
-        return cart;
+    public Order getOrder() {
+        return order;
     }
 
-    public void setCart(Cart cart) {
-        this.cart = cart;
+    public void setOrder(Order order) {
+        this.order = order;
     }
 
     public Product getProduct() {
@@ -61,5 +66,13 @@ public class CartItem {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
     }
 }
